@@ -1,0 +1,72 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Test12-1
+      id: test12-1
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: Test12-1
+        setup-command: "/bin/bash test12.sh"
+        command: cat Test/output1.txt
+        input: ''
+        expected-output: |-
+          -------------------------------------------------------------
+          Knight + Armor + Boots + Sword | Attack: 25 | Speed: 11 | Defense: 30
+          Knight + Armor + Bow | Attack: 22 | Speed: 8 | Defense: 30
+          Invalid equip: Staff requires Wizard
+          -------------------------------------------------------------
+          Wizard + Armor + Boots + Sword | Attack: 30 | Speed: 13 | Defense: 20
+          Invalid equip: Bow requires Archer or Knight
+          Wizard + Boots + Staff | Attack: 28 | Speed: 15 | Defense: 10
+          -------------------------------------------------------------
+          Archer + Armor + Boots + Sword | Attack: 28 | Speed: 18 | Defense: 18
+          Archer + Armor + Bow | Attack: 25 | Speed: 15 | Defense: 18
+          Invalid equip: Staff requires Wizard
+          -------------------------------------------------------------
+          Delete Character: Knight
+          Delete Character: Wizard
+          Delete Character: Archer
+        comparison-method: contains
+        timeout: 10
+    - name: Test12-2
+      id: test12-2
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: Test12-2
+        setup-command: "/bin/bash test12.sh"
+        command: cat Test/output2.txt
+        input: ''
+        expected-output: "[Init] Logger started.\n[Create] Knight\n[Create] Wizard\n[Create]
+          Archer\n[Trying to Equip] Knight + Armor\n[Trying to Equip] Knight + Armor
+          + Boots\n[Trying to Equip] Knight + Armor + Boots + Sword\n[Trying to Equip]
+          Knight + Armor\n[Trying to Equip] Knight + Armor + Bow\n[Trying to Equip]
+          Knight + Boots\n[Trying to Equip] Knight + Boots + Staff\n[Fail to Equip]
+          \n[Trying to Equip] Wizard + Armor\n[Trying to Equip] Wizard + Armor + Boots\n[Trying
+          to Equip] Wizard + Armor + Boots + Sword\n[Trying to Equip] Wizard + Armor\n[Trying
+          to Equip] Wizard + Armor + Bow\n[Fail to Equip] \n[Trying to Equip] Wizard
+          + Boots\n[Trying to Equip] Wizard + Boots + Staff\n[Trying to Equip] Archer
+          + Armor\n[Trying to Equip] Archer + Armor + Boots\n[Trying to Equip] Archer
+          + Armor + Boots + Sword\n[Trying to Equip] Archer + Armor\n[Trying to Equip]
+          Archer + Armor + Bow\n[Trying to Equip] Archer + Boots\n[Trying to Equip]
+          Archer + Boots + Staff\n[Fail to Equip] \n[Shutdown] Logger closed."
+        comparison-method: contains
+        timeout: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TEST12-1_RESULTS: "${{steps.test12-1.outputs.result}}"
+        TEST12-2_RESULTS: "${{steps.test12-2.outputs.result}}"
+      with:
+        runners: test12-1,test12-2
